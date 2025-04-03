@@ -13,11 +13,20 @@ const getTasks = async (req, res) => {
 // Thêm task mới
 const addTask = async (req, res) => {
   try {
-    const { title, description, dueDate, priority } = req.body;
-    const newTask = new Task({ title, description, dueDate, priority });
+    // Lấy đầy đủ các trường cần thiết từ request body
+    const { name, description, dueDate, assignedTo, priority, status } =
+      req.body;
+    const newTask = new Task({
+      name,
+      description,
+      dueDate,
+      assignedTo,
+      priority,
+      status,
+    });
     const savedTask = await newTask.save();
     res.status(201).json({
-      message: 'task added sucessfully',
+      message: 'Task added successfully',
       data: savedTask,
     });
   } catch (error) {
@@ -36,7 +45,7 @@ const updateTask = async (req, res) => {
       return res.status(404).json({ message: 'Task not found' });
 
     res.json({
-      message: 'task updated sucessfully',
+      message: 'Task updated successfully',
       data: updatedTask,
     });
   } catch (error) {

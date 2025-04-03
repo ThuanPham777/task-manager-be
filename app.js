@@ -1,6 +1,7 @@
 const express = require('express');
 const connectDB = require('./config/db');
 const taskRoute = require('./routes/taskRoute');
+const cors = require('cors');
 require('dotenv').config();
 
 const app = express();
@@ -10,7 +11,8 @@ connectDB();
 
 // Middleware
 app.use(express.json()); // Cho phép nhận dữ liệu JSON trong request body
-
+// Allow all origins:
+app.use(cors());
 app.use('/api/tasks', taskRoute);
 
 // Routes
