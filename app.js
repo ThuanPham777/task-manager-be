@@ -1,5 +1,5 @@
 const express = require('express');
-const connectDB = require('./config/db');
+const { connectDB } = require('./config/db');
 const taskRoute = require('./routes/taskRoute');
 const cors = require('cors');
 require('dotenv').config();
@@ -11,8 +11,17 @@ connectDB();
 
 // Middleware
 app.use(express.json()); // Cho phép nhận dữ liệu JSON trong request body
-// Allow all origins:
-app.use(cors());
+const corsOptions = {
+  origin: [
+    'http://taskmanagerfe.s3-website-ap-southeast-1.amazonaws.com',
+    'http://127.0.0.1:5500',
+  ],
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+};
+
+app.use(cors(corsOptions));
+
 app.use('/api/tasks', taskRoute);
 
 // Routes

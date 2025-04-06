@@ -3,66 +3,67 @@ const Task = require('../models/taskModel');
 // Lấy tất cả task
 const getTasks = async (req, res) => {
   try {
-    const tasks = await Task.find();
+    const tasks = await Task.getTasks();
     res.json(tasks);
-  } catch (error) {
+  } catch (err) {
     res.status(500).json({ message: 'Server Error' });
   }
 };
 
 // Thêm task mới
 const addTask = async (req, res) => {
+  const { name, description, dueDate, assignedTo, priority, status } = req.body;
+  const newTask = { name, description, dueDate, assignedTo, priority, status };
+
   try {
-    // Lấy đầy đủ các trường cần thiết từ request body
-    const { name, description, dueDate, assignedTo, priority, status } =
-      req.body;
-    const newTask = new Task({
-      name,
-      description,
-      dueDate,
-      assignedTo,
-      priority,
-      status,
-    });
-    const savedTask = await newTask.save();
+    const result = await Task.addTask(newTask);
+    // Lấy lại task vừa thêm
+    const addedTask = { ...newTask, id: result.insertId }; // result.insertId là ID của task vừa được thêm
     res.status(201).json({
       message: 'Task added successfully',
-      data: savedTask,
+      data: addedTask, // Trả về task được thêm
     });
-  } catch (error) {
+  } catch (err) {
     res.status(500).json({ message: 'Server Error' });
   }
 };
 
 // Cập nhật task
 const updateTask = async (req, res) => {
-  try {
-    const updatedTask = await Task.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-    });
+  const taskId = req.params.id;
+  const taskUpdates = req.body;
 
-    if (!updatedTask)
+  try {
+    // Cập nhật task trong cơ sở dữ liệu
+    const result = await Task.updateTask(taskId, taskUpdates);
+
+    if (result.affectedRows === 0) {
       return res.status(404).json({ message: 'Task not found' });
+    }
+
+    // Sau khi cập nhật, truy vấn lại task từ cơ sở dữ liệu để lấy thông tin mới nhất
+    const updatedTask = await Task.getTaskById(taskId);
 
     res.json({
       message: 'Task updated successfully',
-      data: updatedTask,
+      data: updatedTask, // Trả về toàn bộ dữ liệu của task, bao gồm các trường không thay đổi
     });
-  } catch (error) {
+  } catch (err) {
     res.status(500).json({ message: 'Server Error' });
   }
 };
 
 // Xóa task
 const deleteTask = async (req, res) => {
+  const taskId = req.params.id;
+
   try {
-    const deletedTask = await Task.findByIdAndDelete(req.params.id);
-
-    if (!deletedTask)
+    const result = await Task.deleteTask(taskId);
+    if (result.affectedRows === 0) {
       return res.status(404).json({ message: 'Task not found' });
-
+    }
     res.json({ message: 'Task removed successfully' });
-  } catch (error) {
+  } catch (err) {
     res.status(500).json({ message: 'Server Error' });
   }
 };
